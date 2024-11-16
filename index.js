@@ -1,38 +1,21 @@
 const express = require('express');
 const app = express();
-app.use(express.json()); // Pour traiter les requêtes JSON
+const port = process.env.PORT || 10000;
 
-// Route pour extraire les horaires de début
-app.post('/extract-start-times', (req, res) => {
-    try {
-        // Récupérer la donnée JSON envoyée par Make.com
-        const inputJson = req.body;
+// Middleware pour parser le JSON dans les requêtes
+app.use(express.json());
 
-        // Vérifiez la structure des données
-        if (inputJson && inputJson.value && Array.isArray(inputJson.value)) {
-            // Extraire les horaires de début de chaque créneau
-            const startTimes = inputJson.value.map(slot => slot.start);
-
-            // Convertir en JSON pour le retour
-            const resultJson = { startTimes }; // Encapsuler dans un objet
-
-            console.log("Extracted start times as JSON:", resultJson);
-
-            // Envoyer la réponse avec le bon type de contenu
-            res.setHeader('Content-Type', 'application/json');
-            res.status(200).send(resultJson);
-        } else {
-            console.error("Invalid data structure:", inputJson);
-            res.status(400).send({ error: "Invalid data structure" });
-        }
-    } catch (error) {
-        console.error("Error processing the request:", error);
-        res.status(500).send({ error: "Server error" });
-    }
+// Définir une route POST
+app.post('/', (req, res) => {
+  const requestData = req.body;
+  // Effectuez vos traitements ici...
+  console.log(requestData);
+  
+  // Répondez à la requête avec une confirmation
+  res.status(200).send({ message: "Données reçues avec succès", data: requestData });
 });
 
-// Démarrer le serveur sur un port
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// Démarrer le serveur
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
