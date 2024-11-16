@@ -64,3 +64,21 @@ app.post('/occupied-slots', (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+// Ajouter cette partie à votre fichier `index.js`
+
+// Route pour suggérer les trois premiers créneaux disponibles
+app.post('/suggest-slots', (req, res) => {
+  const { free_slots } = req.body;
+
+  // Vérifier que les créneaux libres sont bien fournis
+  if (!free_slots || !Array.isArray(free_slots) || free_slots.length === 0) {
+    return res.status(400).json({ message: "Invalid input, 'free_slots' is required and should contain an array of slots." });
+  }
+
+  // Extraire les trois premiers créneaux disponibles
+  const suggestedSlots = free_slots.slice(0, 3);
+
+  // Retourner les créneaux suggérés
+  res.status(200).json({ suggested_slots: suggestedSlots });
+});
