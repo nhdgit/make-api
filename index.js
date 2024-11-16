@@ -120,3 +120,45 @@ app.post('/extend-slots', (req, res) => {
   // Retourner le créneau étendu
   res.status(200).json({ start, end });
 });
+
+// Ajouter cette partie à votre fichier `index.js`
+
+// Route pour convertir les créneaux en UTC+1 et générer une phrase en français
+app.post('/answer', (req, res) => {
+  const { suggested_slots } = req.body;
+
+  // Vérifier que les créneaux sont bien fournis
+  if (!suggested_slots || !Array.isArray(suggested_slots) || suggested_slots.length === 0) {
+    return res.status(400).json({ message: "Invalid input, 'suggested_slots' is required and should contain an array of slots." });
+  }
+
+  // Initialiser une chaîne pour construire la réponse en français
+  let responseText = '';
+
+  // Parcourir chaque créneau, le convertir en UTC+1, et formater la phrase
+  suggested_slots.forEach((slot, index) => {
+    const startDate = new Date(slot.start);
+    const endDate = new Date(slot.end);
+
+    // Convertir les heures de UTC à UTC+1
+    const startUTCPlus1 = new Date(startDate.getTime() + 60 * 60 * 1000);
+    const endUTCPlus1 = new Date(endDate.getTime() + 60 * 60 * 1000);
+
+    // Extraire les informations nécessaires pour la phrase
+    const day = String(startUTCPlus1.getUTCDate()).padStart(2, '0');
+    const month = startUTCPlus1.toLocaleString('fr-FR', { month: 'long' });
+    const startHour = startUTCPlus1.getUTCHours();
+    const endHour = endUTCPlus1.getUTCHours();
+
+    // Construire la phrase en français
+    if (index === 0) {
+      responseText += `le ${day} ${month} de ${startHour} heures à ${endHour} heures`;
+    } else {
+      responseText += ` et de ${startHour} heures à ${endHour} heures`;
+    }
+  });
+
+  // Retourner la phrase générée
+  res.status(200).send(responseText);
+});
+
