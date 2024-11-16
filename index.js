@@ -82,3 +82,41 @@ app.post('/suggest-slots', (req, res) => {
   // Retourner les créneaux suggérés
   res.status(200).json({ suggested_slots: suggestedSlots });
 });
+
+// Ajouter cette partie à votre fichier `index.js`
+
+// Route pour étendre le créneau de +1 jour, en sautant le week-end
+app.post('/extend-slots', (req, res) => {
+  const { requested_datetime } = req.body;
+
+  // Vérifier que la date/heure souhaitée est bien fournie
+  if (!requested_datetime) {
+    return res.status(400).json({ message: "Invalid input, 'requested_datetime' is required." });
+  }
+
+  // Traiter la date souhaitée sans fuseau horaire
+  let requestedDate = new Date(`${requested_datetime}Z`); // Ajouter 'Z' pour spécifier que c'est UTC
+
+  if (isNaN(requestedDate.getTime())) {
+    return res.status(400).json({ message: "Invalid input, 'requested_datetime' must be a valid ISO date without timezone." });
+  }
+
+  // Étendre de +1 jour
+  requestedDate.setUTCDate(requestedDate.getUTCDate() + 1);
+
+  // Si J+1 tombe un samedi ou un dimanche, avancer jusqu'au lundi
+  while (requestedDate.getUTCDay() === 6 || requestedDate.getUTCDay() === 0) {
+    requestedDate.setUTCDate(requestedDate.getUTCDate() + 1);
+  }
+
+  // Construire les créneaux d'ouverture (08:00 à 16:00) pour la nouvelle date
+  const year = requestedDate.getUTCFullYear();
+  const month = String(requestedDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(requestedDate.getUTCDate()).padStart(2, '0');
+
+  const start = `${year}-${month}-${day}T08:00:00Z`;
+  const end = `${year}-${month}-${day}T16:00:00Z`;
+
+  // Retourner le créneau étendu
+  res.status(200).json({ start, end });
+});
